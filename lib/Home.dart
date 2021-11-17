@@ -1,4 +1,8 @@
+import 'dart:io';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:path_provider/path_provider.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -8,7 +12,21 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  List<String> tarefas = ["Teste 1", "Teste 2", "Teste 3"];
+  List<Map<String, dynamic>> _listaTarefas = [];
+
+  _salvarArquivo() async {
+    final dir = await getApplicationDocumentsDirectory();
+    var arquivo = File("${dir.path}/dados.json");
+
+    Map<String, dynamic> tarefa = Map();
+    tarefa["titulo"] = "Ir ao mercado";
+    tarefa["realizada"] = false;
+    _listaTarefas.add(tarefa);
+
+    String dados = json.encode(_listaTarefas);
+    arquivo.writeAsString(dados);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -21,10 +39,10 @@ class _HomeState extends State<Home> {
           children: [
             Expanded(
               child: ListView.builder(
-                  itemCount: tarefas.length,
+                  itemCount: _listaTarefas.length,
                   itemBuilder: (context, index) {
                     return ListTile(
-                      title: Text(tarefas[index]),
+                      title: Text(_listaTarefas[index]),
                     );
                   }),
             )
@@ -60,7 +78,6 @@ class _HomeState extends State<Home> {
                   ],
                 );
               });
-          print("Floating button");
         },
         backgroundColor: Colors.purple,
         child: Icon(Icons.add),
