@@ -13,12 +13,13 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   //late List<Map<String, dynamic>> _listaTarefas;
+  TextEditingController _tarefaController = TextEditingController();
   var _listaTarefas = <dynamic>[];
 
-  Map<String, dynamic> _tarefa() {
+  Map<String, dynamic> _tarefa(String novaTarefa, bool status) {
     Map<String, dynamic> tarefa = Map();
-    tarefa["titulo"] = "Fazer caminhada";
-    tarefa["realizada"] = true;
+    tarefa["titulo"] = novaTarefa;
+    tarefa["realizada"] = status;
     return tarefa;
   }
 
@@ -27,8 +28,15 @@ class _HomeState extends State<Home> {
     return ("${dir.path}/dados.json");
   }
 
+  _salvarTarefa() async {
+    String novaTarefa = _tarefaController.text;
+    var tarefa = _tarefa(novaTarefa, false);
+    _listaTarefas.add(tarefa);
+    _salvarArquivo();
+  }
+
   _salvarArquivo() async {
-    _listaTarefas.add(_tarefa());
+    //_listaTarefas.add(_tarefa("Ir ao mercarodo", false));
 
     var caminho = await _getPath();
     print(caminho);
@@ -43,6 +51,7 @@ class _HomeState extends State<Home> {
     try {
       var caminho = await _getPath();
       print(caminho);
+      //File(caminho).delete();
       File(caminho).readAsString().then((dados) {
         setState(() {
           print(json.decode(dados).runtimeType);
@@ -91,6 +100,7 @@ class _HomeState extends State<Home> {
                 return AlertDialog(
                   title: Text("Adicionar Tarefa"),
                   content: TextField(
+                    controller: _tarefaController,
                     decoration:
                         InputDecoration(labelText: "Digite sua tarefa:"),
                     onChanged: (text) {},
@@ -104,6 +114,7 @@ class _HomeState extends State<Home> {
                         )),
                     FlatButton(
                         onPressed: () {
+                          _salvarTarefa();
                           Navigator.pop(context);
                         },
                         child: Text(
