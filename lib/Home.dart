@@ -30,12 +30,20 @@ class _HomeState extends State<Home> {
 
   _salvarTarefa() async {
     String novaTarefa = _tarefaController.text;
-    var tarefa = _tarefa(novaTarefa, true);
+    var tarefa = _tarefa(novaTarefa, false);
 
     setState(() {
       _listaTarefas.add(tarefa);
     });
     _tarefaController.text = "";
+    _salvarArquivo();
+  }
+
+  _removerTarefa(index) async {
+    setState(() {
+      _listaTarefas.removeAt(index);
+    });
+
     _salvarArquivo();
   }
 
@@ -74,6 +82,41 @@ class _HomeState extends State<Home> {
     _lerArquivo();
   }
 
+  Widget criarItemLista(context, index) {
+    return Dismissible(
+        key: Key(_listaTarefas[index]["titulo"]),
+        direction: DismissDirection.endToStart,
+        background: Container(
+          color: Colors.red,
+          padding: EdgeInsets.all(16),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              Icon(
+                Icons.delete,
+                color: Colors.white,
+              )
+            ],
+          ),
+        ),
+        onDismissed: (direction) {
+          _removerTarefa(index);
+        },
+        child: CheckboxListTile(
+            title: Text(_listaTarefas[index]["titulo"]),
+            value: _listaTarefas[index]["realizada"],
+            onChanged: (value) {
+              setState(() {
+                _listaTarefas[index]["realizada"] = value;
+              });
+              _salvarArquivo();
+              print("VAlor alterado: ${value.toString()}");
+            }));
+    //return ListTile(
+    //  title: Text(_listaTarefas[index]["titulo"]),
+    //);
+  }
+
   @override
   Widget build(BuildContext context) {
     //_salvarArquivo();
@@ -87,22 +130,7 @@ class _HomeState extends State<Home> {
           children: [
             Expanded(
               child: ListView.builder(
-                  itemCount: _listaTarefas.length,
-                  itemBuilder: (context, index) {
-                    return CheckboxListTile(
-                        title: Text(_listaTarefas[index]["titulo"]),
-                        value: _listaTarefas[index]["realizada"],
-                        onChanged: (value) {
-                          setState(() {
-                            _listaTarefas[index]["realizada"] = value;
-                          });
-                          _salvarArquivo();
-                          print("VAlor alterado: ${value.toString()}");
-                        });
-                    //return ListTile(
-                    //  title: Text(_listaTarefas[index]["titulo"]),
-                    //);
-                  }),
+                  itemCount: _listaTarefas.length, itemBuilder: criarItemLista),
             )
           ]),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
