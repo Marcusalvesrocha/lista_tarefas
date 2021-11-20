@@ -51,7 +51,6 @@ class _HomeState extends State<Home> {
     //_listaTarefas.add(_tarefa("Ir ao mercarodo", false));
 
     var caminho = await _getPath();
-    print(caminho);
 
     String dados = json.encode(_listaTarefas);
     var file = await File("$caminho").writeAsString(dados);
@@ -62,12 +61,10 @@ class _HomeState extends State<Home> {
   _lerArquivo() async {
     try {
       var caminho = await _getPath();
-      print(caminho);
+
       //File(caminho).delete();
       File(caminho).readAsString().then((dados) {
         setState(() {
-          print(json.decode(dados).runtimeType);
-          print(dados);
           _listaTarefas = json.decode(dados);
         });
       });
@@ -84,7 +81,7 @@ class _HomeState extends State<Home> {
 
   Widget criarItemLista(context, index) {
     return Dismissible(
-        key: Key(_listaTarefas[index]["titulo"]),
+        key: Key(DateTime.now().microsecondsSinceEpoch.toString()),
         direction: DismissDirection.endToStart,
         background: Container(
           color: Colors.red,
@@ -100,7 +97,22 @@ class _HomeState extends State<Home> {
           ),
         ),
         onDismissed: (direction) {
+          final tarefa = _listaTarefas[index];
           _removerTarefa(index);
+
+          final snackbar = SnackBar(
+              duration: Duration(seconds: 5),
+              action: SnackBarAction(
+                  label: "Desfazer",
+                  onPressed: () {
+                    setState(() {
+                      _listaTarefas.insert(index, tarefa);
+                    });
+                    _salvarArquivo();
+                  }),
+              content: Text("Tarefa Removida"));
+
+          Scaffold.of(context).showSnackBar(snackbar);
         },
         child: CheckboxListTile(
             title: Text(_listaTarefas[index]["titulo"]),
@@ -110,7 +122,6 @@ class _HomeState extends State<Home> {
                 _listaTarefas[index]["realizada"] = value;
               });
               _salvarArquivo();
-              print("VAlor alterado: ${value.toString()}");
             }));
     //return ListTile(
     //  title: Text(_listaTarefas[index]["titulo"]),
